@@ -22,12 +22,14 @@ from SolixBLE import (
     F3800,
     PrimeCharger160w,
     PrimeCharger250w,
+    Solarbank2,
     SolixBLEDevice,
 )
 
 from .const import (
     CHARGING_STATUS_C300_STRINGS,
     CHARGING_STATUS_F3800_STRINGS,
+    GRID_STATUS_STRINGS,
     LIGHT_STATUS_STRINGS,
     OVERLOAD_STATUS_C300DC_STRINGS,
     PORT_STATUS_STRINGS,
@@ -101,7 +103,7 @@ async def async_setup_entry(
         ),
 
     # Battery percentage sensor
-    if type(device) in [C300, C300DC, C800, C1000, C1000G2, F2000, F3800]:
+    if type(device) in [C300, C300DC, C800, C1000, C1000G2, F2000, F3800, Solarbank2]:
         sensors.append(
             SolixSensorEntity(
                 device,
@@ -109,6 +111,30 @@ async def async_setup_entry(
                 "%",
                 "battery_percentage",
                 SensorDeviceClass.BATTERY,
+            )
+        )
+
+    # Battery charge power sensor
+    if type(device) in [Solarbank2]:
+        sensors.append(
+            SolixSensorEntity(
+                device,
+                "Battery charge power",
+                "W",
+                "battery_charge_power",
+                SensorDeviceClass.POWER,
+            )
+        )
+
+    # Battery discharge power sensor
+    if type(device) in [Solarbank2]:
+        sensors.append(
+            SolixSensorEntity(
+                device,
+                "Battery discharge power",
+                "W",
+                "battery_discharge_power",
+                SensorDeviceClass.POWER,
             )
         )
 
@@ -124,8 +150,32 @@ async def async_setup_entry(
             )
         )
 
+    # Battery charged energy (energy in)
+    if type(device) in [Solarbank2]:
+        sensors.append(
+            SolixSensorEntity(
+                device,
+                "Battery input energy",
+                "Wh",
+                "charged_energy",
+                SensorDeviceClass.ENERGY,
+            )
+        )
+
+    # Battery discharged energy (energy out)
+    if type(device) in [Solarbank2]:
+        sensors.append(
+            SolixSensorEntity(
+                device,
+                "Battery output energy",
+                "Wh",
+                "output_energy",
+                SensorDeviceClass.ENERGY,
+            )
+        )
+
     # Temperature sensor
-    if type(device) in [C300, C300DC, C800, C1000, C1000G2, F2000, F3800]:
+    if type(device) in [C300, C300DC, C800, C1000, C1000G2, F2000, F3800, Solarbank2]:
         sensors.append(
             SolixSensorEntity(
                 device,
@@ -145,7 +195,7 @@ async def async_setup_entry(
         )
 
     # Total power out sensor
-    if type(device) in [C300, C300DC, C800, C1000, C1000G2, F3800]:
+    if type(device) in [C300, C300DC, C800, C1000, C1000G2, F3800, Solarbank2]:
         sensors.append(
             SolixSensorEntity(
                 device, "Total Power Out", "W", "power_out", SensorDeviceClass.POWER
@@ -165,7 +215,7 @@ async def async_setup_entry(
         ),
 
     # AC power out sensor
-    if type(device) in [C300, C800, C1000, C1000G2, F2000, F3800]:
+    if type(device) in [C300, C800, C1000, C1000G2, F2000, F3800, Solarbank2]:
         sensors.append(
             SolixSensorEntity(
                 device,
@@ -204,7 +254,7 @@ async def async_setup_entry(
         )
 
     # Solar power in
-    if type(device) in [C300, C300DC, C800, C1000, C1000G2, F2000, F3800]:
+    if type(device) in [C300, C300DC, C800, C1000, C1000G2, F2000, F3800, Solarbank2]:
         sensors.append(
             SolixSensorEntity(
                 device,
@@ -212,6 +262,19 @@ async def async_setup_entry(
                 "W",
                 "solar_power_in",
                 SensorDeviceClass.POWER,
+            )
+        )
+
+    # Solar yield
+    # TODO: Unit may not be correct
+    if type(device) in [Solarbank2]:
+        sensors.append(
+            SolixSensorEntity(
+                device,
+                "PV Yield",
+                "Wh",
+                "pv_yield",
+                SensorDeviceClass.ENERGY,
             )
         )
 
@@ -669,8 +732,20 @@ async def async_setup_entry(
             )
         )
 
+    # Error status
+    if type(device) in [Solarbank2]:
+        sensors.append(
+            SolixSensorEntity(
+                device,
+                "Error code",
+                None,
+                "error_code",
+                state_class=None,
+            )
+        )
+
     # Firmware version
-    if type(device) in [C300, C300DC, C800, C1000, F2000, F3800]:
+    if type(device) in [C300, C300DC, C800, C1000, F2000, F3800, Solarbank2]:
         sensors.append(
             SolixSensorEntity(
                 device,
@@ -682,7 +757,7 @@ async def async_setup_entry(
         )
 
     # Serial number
-    if type(device) in [C300, C300DC, C800, C1000, C1000G2, F2000, F3800]:
+    if type(device) in [C300, C300DC, C800, C1000, C1000G2, F2000, F3800, Solarbank2]:
         sensors.append(
             SolixSensorEntity(
                 device,
@@ -718,7 +793,7 @@ async def async_setup_entry(
         )
 
     # Average battery percentage across all batteries
-    if type(device) in [F3800]:
+    if type(device) in [F3800, Solarbank2]:
         sensors.append(
             SolixSensorEntity(
                 device,
@@ -742,7 +817,7 @@ async def async_setup_entry(
         )
 
     # Expansion battery firmware version
-    if type(device) in [C1000, F2000]:
+    if type(device) in [C1000, F2000, Solarbank2]:
         sensors.append(
             SolixSensorEntity(
                 device,
@@ -763,6 +838,180 @@ async def async_setup_entry(
                 "num_expansion",
             )
         )
+
+    ######################
+    # Solar bank sensors #
+    ######################
+
+    # Grid to home power
+    if type(device) in [Solarbank2]:
+        sensors.append(
+            SolixSensorEntity(
+                device,
+                "Grid to Home power",
+                "W",
+                "grid_to_home_power",
+                SensorDeviceClass.POWER,
+            )
+        )
+
+    # PV to grid power
+    if type(device) in [Solarbank2]:
+        sensors.append(
+            SolixSensorEntity(
+                device,
+                "PV to Grid power",
+                "W",
+                "pv_to_grid_power",
+                SensorDeviceClass.POWER,
+            )
+        )
+
+    # Grid import energy
+    if type(device) in [Solarbank2]:
+        sensors.append(
+            SolixSensorEntity(
+                device,
+                "Grid import energy",
+                "Wh",
+                "grid_import_energy",
+                SensorDeviceClass.ENERGY,
+            )
+        )
+
+    # Grid export energy
+    if type(device) in [Solarbank2]:
+        sensors.append(
+            SolixSensorEntity(
+                device,
+                "Grid export energy",
+                "Wh",
+                "grid_export_energy",
+                SensorDeviceClass.ENERGY,
+            )
+        )
+
+    # House demand (power used by house)
+    if type(device) in [Solarbank2]:
+        sensors.append(
+            SolixSensorEntity(
+                device,
+                "House demand power",
+                "W",
+                "house_demand",
+                SensorDeviceClass.POWER,
+            )
+        )
+
+    # House demand (power used by house)
+    if type(device) in [Solarbank2]:
+        sensors.append(
+            SolixSensorEntity(
+                device,
+                "House consumed energy",
+                "Wh",
+                "consumed_energy",
+                SensorDeviceClass.ENERGY,
+            )
+        )
+
+    # Power out of the built-in sockets
+    if type(device) in [Solarbank2]:
+        sensors.append(
+            SolixSensorEntity(
+                device,
+                "Sockets AC Power Out",
+                "W",
+                "ac_power_out_sockets",
+                SensorDeviceClass.POWER,
+            )
+        )
+
+    # Max load
+    if type(device) in [Solarbank2]:
+        sensors.append(
+            SolixSensorEntity(
+                device,
+                "Maximum load",
+                "W",
+                "max_load",
+                SensorDeviceClass.POWER,
+            )
+        )
+
+    # Solar PV power in for port 1
+    if type(device) in [Solarbank2]:
+        sensors.append(
+            SolixSensorEntity(
+                device,
+                "Solar Power In Port 1",
+                "W",
+                "solar_pv_1_power_in",
+                SensorDeviceClass.POWER,
+            )
+        )
+
+    # Solar PV power in for port 2
+    if type(device) in [Solarbank2]:
+        sensors.append(
+            SolixSensorEntity(
+                device,
+                "Solar Power In Port 2",
+                "W",
+                "solar_pv_2_power_in",
+                SensorDeviceClass.POWER,
+            )
+        )
+
+    # Solar PV power in for port 3
+    if type(device) in [Solarbank2]:
+        sensors.append(
+            SolixSensorEntity(
+                device,
+                "Solar Power In Port 3",
+                "W",
+                "solar_pv_3_power_in",
+                SensorDeviceClass.POWER,
+            )
+        )
+
+    # Solar PV power in for port 4
+    if type(device) in [Solarbank2]:
+        sensors.append(
+            SolixSensorEntity(
+                device,
+                "Solar Power In Port 4",
+                "W",
+                "solar_pv_4_power_in",
+                SensorDeviceClass.POWER,
+            )
+        )
+
+    # Grid status
+    if type(device) in [Solarbank2]:
+        sensors.append(
+            SolixSensorEntity(
+                device,
+                "Grid Status",
+                None,
+                "grid_status",
+                SensorDeviceClass.ENUM,
+                GRID_STATUS_STRINGS,
+                None,
+            )
+        )
+
+    # Heater status
+    if type(device) in [Solarbank2]:
+        sensors.append(
+            SolixSensorEntity(
+                device,
+                "Heater on",
+                None,
+                "battery_heating",
+                None,
+            )
+        ),
 
     async_add_entities(sensors)
 

@@ -30,6 +30,8 @@ from . import (
     MOCK_PRIME_160_TEST_DATA,
     MOCK_PRIME_250_DETAILS,
     MOCK_PRIME_250_TEST_DATA,
+    MOCK_SOLAR_BANK_2_DETAILS,
+    MOCK_SOLAR_BANK_2_TEST_DATA,
     MOCK_UNKNOWN_DETAILS,
     MOCK_UNKNOWN_TEST_DATA,
     MockDeviceDetails,
@@ -93,6 +95,13 @@ from . import (
             "PrimeCharger250w",
             MOCK_PRIME_250_TEST_DATA,
             id="prime_250w",
+        ),
+        pytest.param(
+            MOCK_SOLAR_BANK_2_DETAILS,
+            MOCK_SOLAR_BANK_2_DETAILS,
+            "Solarbank2",
+            MOCK_SOLAR_BANK_2_TEST_DATA,
+            id="solar_bank_2",
         ),
         pytest.param(
             MOCK_UNKNOWN_DETAILS,

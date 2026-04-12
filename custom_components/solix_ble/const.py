@@ -20,6 +20,8 @@ LIGHT_STATUS_STRINGS = ["Unknown", "Off", "Low", "Medium", "High"]
 
 OVERLOAD_STATUS_C300DC_STRINGS = ["Unknown", "None", "USB C1", "USB C2", "USB C3"]
 
+GRID_STATUS_STRINGS = ["Unknown", "Ok", "Ok?", "Connecting", "No grid"]
+
 
 class Models(Enum):
     C300 = "C300(X)"
@@ -31,4 +33,5 @@ class Models(Enum):
     F3800 = "F3800"
     PRIME_CHARGER_160 = "Prime Charger (160w)"
     PRIME_CHARGER_250 = "Prime Charger (250w)"
+    SOLARBANK_2 = "Solarbank 2"
     UNKNOWN = "Unknown"

@@ -168,6 +168,13 @@ MOCK_PRIME_250_DETAILS = MockDeviceDetails(
     model_class=Models.PRIME_CHARGER_250,
 )
 
+MOCK_SOLAR_BANK_2_DETAILS = MockDeviceDetails(
+    name="Solar Bank 2",
+    addr="AA:BB:CC:DD:00:02",
+    model_string="Solarbank 2",
+    model_class=Models.SOLARBANK_2,
+)
+
 MOCK_UNKNOWN_DETAILS = MockDeviceDetails(
     name="Anker SOLIX IDK",
     addr="AA:BB:CC:DD:EE:04",
@@ -335,6 +342,42 @@ MOCK_PRIME_250_TEST_DATA = {
     "usb_port_c4": ("status_usb_c4", PortStatus.OUTPUT),
     "usb_port_a1": ("status_usb_a1", PortStatus.OUTPUT),
     "usb_port_a2": ("status_usb_a2", PortStatus.NOT_CONNECTED),
+}
+
+
+# Sometimes the method name we are patching and the
+# entity ID do not line up, so a tuple is used to
+# manually specify it
+MOCK_SOLAR_BANK_2_TEST_DATA = {
+    "serial_number": "abcdef",
+    "battery_percentage": 56,
+    "software_version": "0.0.1",
+    "software_version_expansion": "0.0.2",
+    "temperature": -5,
+    "solar_power_in": 150.3,
+    "ac_power_out": 700.1,
+    "battery_percentage_aggregate": 90,
+    "battery_charge_power": 0,
+    "pv_yield": 1053.2,
+    "charged_energy": 124.3,
+    "output_energy": 12.7,
+    "battery_discharge_power": 12.4,
+    "grid_to_home_power": 12.5,
+    "pv_to_grid_power": 1245.1,
+    "grid_import_energy": 12.3,
+    "grid_export_energy": 1257.3,
+    "house_demand": 124.6,
+    "ac_power_out_sockets": 1.67,
+    "max_load": 13.75,
+    "consumed_energy": 124.5,
+    "solar_pv_1_power_in": 13.1,
+    "solar_pv_2_power_in": 13.2,
+    "solar_pv_3_power_in": 13.3,
+    "solar_pv_4_power_in": 13.4,
+    "power_out": 14.745,
+    "error_code": 0,
+    "grid_status": -1,
+    "battery_heating": True,
 }
 
 MOCK_UNKNOWN_TEST_DATA = {}
