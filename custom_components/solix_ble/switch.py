@@ -101,6 +101,19 @@ async def async_setup_entry(
             ),
         )
 
+    # Support for power saving mode switch with status
+    if type(device) in [F2000]:
+        switches.append(
+            SolixSwitchEntity(
+                device,
+                "Power Saving Mode",
+                "power_saving_mode",
+                "power_saving_mode_enabled",
+                "turn_power_saving_mode_on",
+                "turn_power_saving_mode_off",
+            ),
+        )
+
     # Support for controlling USB Port C1
     if type(device) in [PrimeCharger160w]:
         switches.append(

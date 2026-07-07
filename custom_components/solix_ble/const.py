@@ -31,7 +31,7 @@ CHARGING_STATUS_F3800_STRINGS = [
 # Light status #
 ################
 
-LIGHT_STATUS_STRINGS = ["Unknown", "Off", "Low", "Medium", "High"]
+LIGHT_STATUS_STRINGS = ["Unknown", "Off", "Low", "Medium", "High", "SOS"]
 
 LIGHT_STATUS_SB2_STRINGS = ["Unknown", "Normal", "Mood"]
 
