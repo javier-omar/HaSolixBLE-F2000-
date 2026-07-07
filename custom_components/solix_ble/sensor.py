@@ -781,7 +781,9 @@ async def async_setup_entry(
         )
 
     # Light status
-    if type(device) in [C300, C300DC, F2000]:
+    # NOTE: F2000 excluded - its light-status telemetry key ('cf') is unreliable
+    # (stuck reporting OFF); the Light Mode select is a write-only control instead.
+    if type(device) in [C300, C300DC]:
         sensors.append(
             SolixSensorEntity(
                 device,
@@ -795,7 +797,10 @@ async def async_setup_entry(
         )
 
     # Display status
-    if type(device) in [C300DC, F2000]:
+    # NOTE: F2000 excluded - display_mode ('d9') is absent from passive telemetry
+    # pushes, so this would read "Unknown" in normal operation; the Display
+    # Brightness select covers control instead.
+    if type(device) in [C300DC]:
         sensors.append(
             SolixSensorEntity(
                 device,

@@ -50,14 +50,18 @@ async def async_setup_entry(
     device = config_entry.runtime_data
     selects: list[SolixSelectEntity] = []
 
-    # Support for light mode select
+    # Support for light mode select.
+    # NOTE: The F2000 does not expose a usable light-status readback (telemetry
+    # key 'cf' is stuck reporting OFF regardless of the actual state), so this
+    # is a write-only control (state_attribute=None) driven purely by the last
+    # commanded value.
     if type(device) in [F2000]:
         selects.append(
             SolixSelectEntity(
                 device,
                 "Light Mode",
                 "light_mode",
-                "light",
+                None,
                 LIGHT_MODE_OPTIONS,
                 "set_light_mode",
             )
@@ -104,7 +108,7 @@ class SolixSelectEntity(SelectEntity):
         device: SolixBLEDevice,
         name: str,
         attribute: str,
-        state_attribute: str,
+        state_attribute: str | None,
         options: dict[str, object],
         set_function_attribute: str,
         value_lookup: bool = False,
@@ -114,7 +118,8 @@ class SolixSelectEntity(SelectEntity):
         :param device: The device API object.
         :param name: Name of the select entity.
         :param attribute: Attribute used in unique ID generation.
-        :param state_attribute: Name of property in API object to determine state.
+        :param state_attribute: Name of property in API object to determine state,
+            or None for a write-only control with no reliable readback.
         :param options: Mapping of displayed option name to the value it represents.
         :param set_function_attribute: Name of function in API object to set the option.
         :param value_lookup: If True, state_attribute holds the raw value (e.g. int
@@ -149,6 +154,11 @@ class SolixSelectEntity(SelectEntity):
     def _update_updatable_attributes(self) -> None:
         """Update this entities updatable attrs from the devices state."""
         self._attr_available = self._device.available
+
+        # Write-only control: the device has no reliable readback for this
+        # setting, so state is driven purely by the last commanded value.
+        if self._state_attribute is None:
+            return
 
         # The underlying telemetry key for these settings (e.g. display
         # brightness/timeout) is not present in every passive telemetry push;
