@@ -1,6 +1,7 @@
 """SolixBLE integration."""
 
 import logging
+from datetime import timedelta
 
 from homeassistant.components.bluetooth import (
     async_ble_device_from_address,
@@ -10,6 +11,7 @@ from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import Platform
 from homeassistant.core import HomeAssistant
 from homeassistant.exceptions import ConfigEntryNotReady
+from homeassistant.helpers.event import async_track_time_interval
 from SolixBLE import (
     C300,
     C300DC,
@@ -29,6 +31,10 @@ from SolixBLE import (
 from .const import Models
 
 _LOGGER = logging.getLogger(__name__)
+
+# Interval for actively polling the device for settings that are not included
+# in passive telemetry pushes (see the F2000 polling setup below).
+POLL_INTERVAL = timedelta(seconds=60)
 
 type SolixBLEConfigEntry = ConfigEntry[SolixBLEDevice]
 
@@ -112,6 +118,31 @@ async def async_setup_entry(hass: HomeAssistant, entry: SolixBLEConfigEntry) -> 
     await hass.config_entries.async_forward_entry_setups(
         entry, [Platform.SENSOR, Platform.SWITCH, Platform.SELECT, Platform.NUMBER]
     )
+
+    # The F2000 only reports several settings (display brightness/timeout,
+    # display on/off, power saving mode, AC charging power) in response to an
+    # explicit status poll - they are absent from passive telemetry pushes.
+    # Poll periodically so those entities reflect live device state instead of
+    # only the last value commanded from Home Assistant.
+    if isinstance(device, F2000):
+        poll_state = {"running": False}
+
+        async def _async_poll_status(_now) -> None:
+            # Skip if a previous poll is still in flight (should not happen with
+            # the interval well above the per-poll timeout, but be safe).
+            if poll_state["running"]:
+                return
+            poll_state["running"] = True
+            try:
+                await device.get_status_update()
+            except Exception as e:  # noqa: BLE001 - a failed poll must not raise
+                _LOGGER.debug("Scheduled F2000 status poll failed: %s", e)
+            finally:
+                poll_state["running"] = False
+
+        entry.async_on_unload(
+            async_track_time_interval(hass, _async_poll_status, POLL_INTERVAL)
+        )
 
     return True
 
