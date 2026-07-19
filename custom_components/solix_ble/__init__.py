@@ -115,6 +115,16 @@ async def async_setup_entry(hass: HomeAssistant, entry: SolixBLEConfigEntry) -> 
 
     entry.runtime_data = device
 
+    # Poll once before entities are created so poll-only settings (display
+    # brightness/timeout/on-off, charge limit, C1000 light) have their real
+    # value on first connect instead of showing "unknown" until the first
+    # periodic poll (up to POLL_INTERVAL later).
+    if hasattr(device, "get_status_update"):
+        try:
+            await device.get_status_update()
+        except Exception as e:  # noqa: BLE001 - initial poll is best-effort
+            _LOGGER.debug("Initial status poll failed: %s", e)
+
     await hass.config_entries.async_forward_entry_setups(
         entry, [Platform.SENSOR, Platform.SWITCH, Platform.SELECT, Platform.NUMBER]
     )
