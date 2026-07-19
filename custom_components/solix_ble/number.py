@@ -9,7 +9,7 @@ from homeassistant.components.number import NumberEntity, NumberMode
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.device_registry import CONNECTION_BLUETOOTH, DeviceInfo
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
-from SolixBLE import F2000, SolixBLEDevice
+from SolixBLE import C1000, F2000, SolixBLEDevice
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -29,7 +29,7 @@ async def async_setup_entry(
     numbers: list[SolixNumberEntity] = []
 
     # Support for AC charging power limit
-    if type(device) in [F2000]:
+    if type(device) in [C1000, F2000]:
         numbers.append(
             SolixNumberEntity(
                 device,
